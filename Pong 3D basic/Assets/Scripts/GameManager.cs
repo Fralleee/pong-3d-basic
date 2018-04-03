@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 // Tasks
@@ -32,6 +33,8 @@ public class GameManager : MonoBehaviour
   [SerializeField] private GameObject player2ScoreText;
 
   public static GameManager instance = null;
+  private GameOptions options;
+  private GameObject pauseMenu;
 
   // Stuff that gets reset every new game
   [SerializeField] private StateType state;
@@ -41,9 +44,6 @@ public class GameManager : MonoBehaviour
   private int roundNo = 1;
   private bool roundStarted = false;
 
-
-
-  private bool multiplayer = false;
   private bool player1Ready = false;
   private bool player2Ready = false;
   private int startFreezeTime = 5;
@@ -54,9 +54,11 @@ public class GameManager : MonoBehaviour
   {
     if (instance == null) instance = this;
     else if (instance != this) Destroy(gameObject);
-    DontDestroyOnLoad(gameObject);
+    //DontDestroyOnLoad(gameObject);
     ball = GameObject.FindGameObjectWithTag("Ball").transform;
+    options = GameObject.Find("_GameOptions").GetComponent<GameOptions>();
     InitGame();
+    SceneManager.LoadScene("PauseScene", LoadSceneMode.Additive);
   }
 
   void InitGame()
@@ -71,6 +73,12 @@ public class GameManager : MonoBehaviour
 
   void Update()
   {
+    if (Input.GetKeyDown(KeyCode.Escape))
+    {
+      if (pauseMenu.activeSelf) pauseMenu.SetActive(false);
+      else pauseMenu.SetActive(true);
+    }
+
     switch (state)
     {
       case StateType.NEWROUND:
@@ -165,7 +173,7 @@ public class GameManager : MonoBehaviour
   {
     if (Input.GetButtonDown("Fire1")) // Change this to P1Start
     {
-      if (multiplayer) player1Ready = !player1Ready;
+      if (options.gameType == GameType.MULTIPLAYER) player1Ready = !player1Ready;
       else
       {
         player1Ready = true;
@@ -191,7 +199,27 @@ public class GameManager : MonoBehaviour
     player1Ready = false;
     player2Ready = false;
 
-  // Change state
-  state = StateType.NEWROUND;
+    // Change state
+    state = StateType.NEWROUND;
+  }
+
+
+  void OnEnable()
+  {
+    SceneManager.sceneLoaded += OnLevelFinishedLoading;
+  }
+
+  void OnDisable()
+  {
+    SceneManager.sceneLoaded -= OnLevelFinishedLoading;
+  }
+
+  void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode)
+  {
+    if(scene.name == "PauseScene")
+    {
+      pauseMenu = GameObject.Find("PauseMenu");
+      pauseMenu.SetActive(false);
+    }
   }
 }

@@ -12,10 +12,7 @@ using DG.Tweening;
 public class PadController : MonoBehaviour
 {
   private Rigidbody body;
-  private Quaternion originRotation;
   [SerializeField] private float speed = 50f;
-  [SerializeField] private float torqueSpeed = 40f;
-  [SerializeField] private float torqueRecoverySpeed = 25f;
   [SerializeField] private float maxSpeed = 15f;
   [SerializeField] private float spinCooldown = .2f;
   private float movementX = 0f;
@@ -27,7 +24,6 @@ public class PadController : MonoBehaviour
   {
     body = GetComponent<Rigidbody>();
     body.maxAngularVelocity = 500f;
-    originRotation = transform.rotation;
   }
 
   void Update()
