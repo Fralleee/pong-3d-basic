@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2017
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pong 3D basic", "Pong 3D basic.csproj", "{2D4BB416-110E-327A-56E6-B99590553FC0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2D4BB416-110E-327A-56E6-B99590553FC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D4BB416-110E-327A-56E6-B99590553FC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D4BB416-110E-327A-56E6-B99590553FC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D4BB416-110E-327A-56E6-B99590553FC0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class PauseOptions : MonoBehaviour
+public class PauseOptions
 {
   public void Quit()
   {

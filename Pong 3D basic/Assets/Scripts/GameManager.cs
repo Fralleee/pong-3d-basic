@@ -34,7 +34,6 @@ public class GameManager : MonoBehaviour
 
   public static GameManager instance = null;
   private GameOptions options;
-  private GameObject pauseMenu;
 
   // Stuff that gets reset every new game
   [SerializeField] private StateType state;
@@ -42,8 +41,8 @@ public class GameManager : MonoBehaviour
   public int player2Score;
   private int ballLevel; // this controls ball max speed
   private int roundNo = 1;
+  private bool isPaused = false;
   private bool roundStarted = false;
-
   private bool player1Ready = false;
   private bool player2Ready = false;
   private int startFreezeTime = 5;
@@ -58,27 +57,11 @@ public class GameManager : MonoBehaviour
     ball = GameObject.FindGameObjectWithTag("Ball").transform;
     options = GameObject.Find("_GameOptions").GetComponent<GameOptions>();
     InitGame();
-    SceneManager.LoadScene("PauseScene", LoadSceneMode.Additive);
-  }
-
-  void InitGame()
-  {
-    uiBackground.SetActive(false);
-    countdownLabelText.SetActive(false);
-    countdownText.SetActive(false);
-    player1Score = 0;
-    state = StateType.NEWROUND;
-    ballLevel = 1;
   }
 
   void Update()
   {
-    if (Input.GetKeyDown(KeyCode.Escape))
-    {
-      if (pauseMenu.activeSelf) pauseMenu.SetActive(false);
-      else pauseMenu.SetActive(true);
-    }
-
+    HandlePause();
     switch (state)
     {
       case StateType.NEWROUND:
@@ -96,6 +79,35 @@ public class GameManager : MonoBehaviour
       default:
         Debug.Log("ERROR: Unknown game state: " + state);
         break;
+    }
+  }
+
+  void InitGame()
+  {
+    uiBackground.SetActive(false);
+    countdownLabelText.SetActive(false);
+    countdownText.SetActive(false);
+    player1Score = 0;
+    state = StateType.NEWROUND;
+    ballLevel = 1;
+  }
+
+  void HandlePause()
+  {
+    if (Input.GetKeyDown(KeyCode.Escape))
+    {
+      if (isPaused)
+      {
+        isPaused = false;
+        Time.timeScale = 1;
+        SceneManager.UnloadSceneAsync("PauseScene");
+      }
+      else
+      {
+        isPaused = true;
+        Time.timeScale = 0;
+        SceneManager.LoadScene("PauseScene", LoadSceneMode.Additive);
+      }
     }
   }
 
@@ -201,25 +213,5 @@ public class GameManager : MonoBehaviour
 
     // Change state
     state = StateType.NEWROUND;
-  }
-
-
-  void OnEnable()
-  {
-    SceneManager.sceneLoaded += OnLevelFinishedLoading;
-  }
-
-  void OnDisable()
-  {
-    SceneManager.sceneLoaded -= OnLevelFinishedLoading;
-  }
-
-  void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode)
-  {
-    if(scene.name == "PauseScene")
-    {
-      pauseMenu = GameObject.Find("PauseMenu");
-      pauseMenu.SetActive(false);
-    }
   }
 }
