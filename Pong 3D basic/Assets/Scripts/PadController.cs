@@ -15,6 +15,10 @@ public class PadController : MonoBehaviour
   [SerializeField] private float speed = 50f;
   [SerializeField] private float maxSpeed = 15f;
   [SerializeField] private float spinCooldown = .2f;
+
+  [SerializeField] private Vector2 zBounds;
+  [SerializeField] private Vector2 xBounds;
+
   private float movementX = 0f;
   private float movementZ = 0f;
   private float nextSpin = 0f;
@@ -53,14 +57,17 @@ public class PadController : MonoBehaviour
   void ClampPosition()
   {
     var pos = transform.position;
-    pos.x = Mathf.Clamp(transform.position.x, -13f, 13f);
-    pos.z = Mathf.Clamp(transform.position.z, 20.5f, 29f);
+    pos.x = Mathf.Clamp(transform.position.x, xBounds.x, xBounds.y);
+    pos.z = Mathf.Clamp(transform.position.z, zBounds.x, zBounds.y);
     transform.position = pos;
   }
 
   void Spin()
   {
-    transform.DORotate(new Vector3(0, 180f, 0), .4f, RotateMode.LocalAxisAdd).SetEase(Ease.OutBack);
+    transform.localScale = new Vector3(6f, 1f, 3f);
+    transform.DOScaleX(3f, .8f).SetEase(Ease.OutBack);
+    transform.DOScaleZ(1f, .8f).SetEase(Ease.OutBack);
+    transform.DORotate(new Vector3(0, 180f, 0), .8f, RotateMode.LocalAxisAdd).SetEase(Ease.OutBack);
   }
 
   void OnCollisionEnter(Collision collision)
