@@ -1,7 +1,9 @@
 # pong-3d-basic
 A basic implementation of the game Pong in 3d
 
-# Todo  
+# Todo 
+- Remove gitignore .sln 
+
 - Create basic game manager
   - Win conditions rules
 	- Timer
