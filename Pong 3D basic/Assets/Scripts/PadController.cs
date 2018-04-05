@@ -64,9 +64,8 @@ public class PadController : MonoBehaviour
 
   void Spin()
   {
-    transform.localScale = new Vector3(6f, 1f, 3f);
+    transform.localScale = new Vector3(6f, 1f, 1f);
     transform.DOScaleX(3f, .8f).SetEase(Ease.OutBack);
-    transform.DOScaleZ(1f, .8f).SetEase(Ease.OutBack);
     transform.DORotate(new Vector3(0, 180f, 0), .8f, RotateMode.LocalAxisAdd).SetEase(Ease.OutBack);
   }
 

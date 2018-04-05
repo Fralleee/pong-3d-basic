@@ -29,11 +29,17 @@ public class GameManager : MonoBehaviour
   [SerializeField] private GameObject uiBackground;
   [SerializeField] private GameObject countdownLabelText;
   [SerializeField] private GameObject countdownText;
+  [SerializeField] private GameObject readyLabel;
+  [SerializeField] private GameObject player1ReadyText;
+  [SerializeField] private GameObject player2ReadyText;
   [SerializeField] private GameObject player1ScoreText;
   [SerializeField] private GameObject player2ScoreText;
+  [SerializeField] private GameObject pad1;
+  [SerializeField] private GameObject pad2;
 
   public static GameManager instance = null;
   private GameOptions options;
+  private float timer = 180f;
 
   // Stuff that gets reset every new game
   [SerializeField] private StateType state;
@@ -61,6 +67,7 @@ public class GameManager : MonoBehaviour
 
   void Update()
   {
+    timer -= Time.deltaTime;
     HandlePause();
     switch (state)
     {
@@ -113,10 +120,14 @@ public class GameManager : MonoBehaviour
 
   void NewRoundState()
   {
-    // maybe upgrade this to some kind of state handler which manages state requirements and nextstates
-    // we need to reset playerReady on score
+    readyLabel.SetActive(true);
+    player1ReadyText.SetActive(true);
+    player2ReadyText.SetActive(true);
     if (CheckIfPlayersReady())
     {
+      readyLabel.SetActive(false);
+      player1ReadyText.SetActive(false);
+      player2ReadyText.SetActive(false);
       roundStartTime = Time.time + (roundNo == 1 ? startFreezeTime : freezeTime);
       roundStarted = false;
       state = StateType.FREEZE;
@@ -125,22 +136,17 @@ public class GameManager : MonoBehaviour
 
   void FreezeState()
   {
-    // After input let's start the freeze timer that counts down
-    // 5.. 4.. 3.. ready.. set.. GO!
-
-    // Apply UI text to display the countdown
-    if (Time.time > roundStartTime)
-      state = StateType.LIVE;
+    if (Time.time > roundStartTime) state = StateType.LIVE;
     else
     {
+      pad1.GetComponent<PadController>().enabled = false;
+      if (options.gameType == GameType.MULTIPLAYER) pad2.GetComponent<PadController>().enabled = false;
+      else pad2.GetComponent<AIController>().enabled = false;
       float secondsLeft = roundStartTime - Time.time;
-
-      if (roundNo == 1)
-        countdownLabelText.SetActive(true);
-
+      if (roundNo == 1 && secondsLeft > 3) countdownLabelText.SetActive(true);
+      else countdownLabelText.SetActive(false);
       countdownText.SetActive(true);
       uiBackground.SetActive(true);
-
       string text = secondsLeft > 3 ? ((int)secondsLeft + 1).ToString() : secondsLeft > 2 ? "READY" : secondsLeft > 1 ? "SET" : "GO";
       countdownText.GetComponent<Text>().text = text;
     }
@@ -162,10 +168,11 @@ public class GameManager : MonoBehaviour
     }
     else
     {
-      if (ball.position.z < -30)
-        Score(ref player2Score, ref player2ScoreText);
-      else if (ball.position.z > 30)
-        Score(ref player1Score, ref player1ScoreText);
+      pad1.GetComponent<PadController>().enabled = true;
+      if (options.gameType == GameType.MULTIPLAYER) pad2.GetComponent<PadController>().enabled = true;
+      else pad2.GetComponent<AIController>().enabled = true;
+      if (ball.position.z < -30) Score(ref player2Score, ref player2ScoreText);
+      else if (ball.position.z > 30) Score(ref player1Score, ref player1ScoreText);
     }
   }
 
@@ -174,6 +181,11 @@ public class GameManager : MonoBehaviour
     // Display who won
     // Time
     // Game end reason (score or time or forfeit)
+    countdownLabelText.SetActive(true);
+    countdownText.SetActive(true);
+    string winner = player1Score > player2Score ? "PLAYER 1" : "PLAYER 2";
+    countdownLabelText.GetComponent<Text>().text = "GAME OVER";
+    countdownText.GetComponent<Text>().text = winner + " WON";
   }
 
   public void OnApplicationQuit()
@@ -183,19 +195,14 @@ public class GameManager : MonoBehaviour
 
   bool CheckIfPlayersReady()
   {
-    if (Input.GetButtonDown("Fire1")) // Change this to P1Start
-    {
-      if (options.gameType == GameType.MULTIPLAYER) player1Ready = !player1Ready;
-      else
-      {
-        player1Ready = true;
-        player2Ready = true;
-      }
-    }
-    if (Input.GetButtonDown("Fire2")) // Change this to P2Start
-      player2Ready = !player2Ready;
+    // Change this to P1Start
+    if (Input.GetButtonDown("Fire1")) player1Ready = !player1Ready;
+    // Change this to P2Start
+    if (Input.GetButtonDown("Fire2")) player2Ready = !player2Ready;
 
-    return player1Ready && player2Ready;
+    if (player1Ready) player1ReadyText.GetComponent<Text>().color = new Color(139f / 255.0f, 255f / 255f, 139f / 255f);
+    if (player2Ready) player2ReadyText.GetComponent<Text>().color = new Color(139f / 255.0f, 255f / 255f, 139f / 255f);
+    return options.gameType == GameType.MULTIPLAYER ? player1Ready && player2Ready : player1Ready;
   }
 
   public void Score(ref int score, ref GameObject scoreText)
@@ -210,8 +217,9 @@ public class GameManager : MonoBehaviour
     ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
     player1Ready = false;
     player2Ready = false;
-
-    // Change state
-    state = StateType.NEWROUND;
+    
+    // Game ended or new round
+    if (score == 1 || timer <= 0) state = StateType.GAMEEND;
+    else state = StateType.NEWROUND;
   }
 }
