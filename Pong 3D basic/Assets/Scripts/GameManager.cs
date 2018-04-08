@@ -34,6 +34,7 @@ public class GameManager : MonoBehaviour
   [SerializeField] private GameObject player2ReadyText;
   [SerializeField] private GameObject player1ScoreText;
   [SerializeField] private GameObject player2ScoreText;
+  [SerializeField] private GameObject mainMenuButton;
   [SerializeField] private GameObject pad1;
   [SerializeField] private GameObject pad2;
 
@@ -122,7 +123,8 @@ public class GameManager : MonoBehaviour
   {
     readyLabel.SetActive(true);
     player1ReadyText.SetActive(true);
-    player2ReadyText.SetActive(true);
+    if (options.gameType == GameType.SINGLEPLAYER) player1ReadyText.GetComponent<RectTransform>().localPosition = new Vector3(0, -40.5f, 0);
+    if (options.gameType == GameType.MULTIPLAYER) player2ReadyText.SetActive(true);
     if (CheckIfPlayersReady())
     {
       readyLabel.SetActive(false);
@@ -178,11 +180,13 @@ public class GameManager : MonoBehaviour
 
   void GameEndState()
   {
-    // Display who won
-    // Time
-    // Game end reason (score or time or forfeit)
+    // Move this to a function
+    pad1.GetComponent<PadController>().enabled = false;
+    if (options.gameType == GameType.MULTIPLAYER) pad2.GetComponent<PadController>().enabled = false;
+    else pad2.GetComponent<AIController>().enabled = false;
     countdownLabelText.SetActive(true);
     countdownText.SetActive(true);
+    mainMenuButton.SetActive(true);
     string winner = player1Score > player2Score ? "PLAYER 1" : "PLAYER 2";
     countdownLabelText.GetComponent<Text>().text = "GAME OVER";
     countdownText.GetComponent<Text>().text = winner + " WON";
@@ -195,13 +199,10 @@ public class GameManager : MonoBehaviour
 
   bool CheckIfPlayersReady()
   {
-    // Change this to P1Start
-    if (Input.GetButtonDown("Fire1")) player1Ready = !player1Ready;
-    // Change this to P2Start
-    if (Input.GetButtonDown("Fire2")) player2Ready = !player2Ready;
-
-    if (player1Ready) player1ReadyText.GetComponent<Text>().color = new Color(139f / 255.0f, 255f / 255f, 139f / 255f);
-    if (player2Ready) player2ReadyText.GetComponent<Text>().color = new Color(139f / 255.0f, 255f / 255f, 139f / 255f);
+    if (Input.GetButtonDown("Start_P1")) player1Ready = !player1Ready;
+    if (options.gameType == GameType.MULTIPLAYER && Input.GetButtonDown("Start_P2")) player2Ready = !player2Ready;
+    if (player1Ready) player1ReadyText.GetComponent<Text>().color = new Color(139f / 255f, 255f / 255f, 139f / 255f);
+    if (player2Ready) player2ReadyText.GetComponent<Text>().color = new Color(139f / 255f, 255f / 255f, 139f / 255f);
     return options.gameType == GameType.MULTIPLAYER ? player1Ready && player2Ready : player1Ready;
   }
 
@@ -217,9 +218,16 @@ public class GameManager : MonoBehaviour
     ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
     player1Ready = false;
     player2Ready = false;
-    
+    player1ReadyText.GetComponent<Text>().color = new Color(255f / 255f, 139f / 255f, 139f / 255f);
+    player2ReadyText.GetComponent<Text>().color = new Color(255f / 255f, 139f / 255f, 139f / 255f);
+
     // Game ended or new round
-    if (score == 1 || timer <= 0) state = StateType.GAMEEND;
+    if (score == 10 || timer <= 0) state = StateType.GAMEEND;
     else state = StateType.NEWROUND;
+  }
+
+  public void MenuScene()
+  {
+    SceneManager.LoadScene("MenuScene");
   }
 }

@@ -8,14 +8,19 @@ using DG.Tweening;
  * 
  */
 
+public enum PlayerController {
+  PLAYER1,
+  PLAYER2
+}
+
 [RequireComponent(typeof(Rigidbody))]
 public class PadController : MonoBehaviour
 {
   private Rigidbody body;
+  [SerializeField] private PlayerController player = PlayerController.PLAYER1;
   [SerializeField] private float speed = 50f;
   [SerializeField] private float maxSpeed = 15f;
   [SerializeField] private float spinCooldown = .2f;
-
   [SerializeField] private Vector2 zBounds;
   [SerializeField] private Vector2 xBounds;
 
@@ -23,18 +28,25 @@ public class PadController : MonoBehaviour
   private float movementZ = 0f;
   private float nextSpin = 0f;
 
+  private string verticalControlIdentifier;
+  private string horizontalControlIdentifier;
+  private string fireControlIdentifier;
+
   #region Monobehaviour methods
   void Start()
   {
     body = GetComponent<Rigidbody>();
     body.maxAngularVelocity = 500f;
+    verticalControlIdentifier = player == PlayerController.PLAYER1 ? "Vertical_P1" : "Vertical_P2";
+    horizontalControlIdentifier = player == PlayerController.PLAYER1 ? "Horizontal_P1" : "Horizontal_P2";
+    fireControlIdentifier = player == PlayerController.PLAYER1 ? "Fire_P1" : "Fire_P2";
   }
 
   void Update()
   {
-    movementX = Input.GetAxisRaw("Vertical") * -speed;
-    movementZ = Input.GetAxisRaw("Horizontal") * speed;
-    if (Input.GetButtonDown("Fire1") && Time.time > nextSpin)
+    movementX = Input.GetAxisRaw(verticalControlIdentifier) * -speed;
+    movementZ = Input.GetAxisRaw(horizontalControlIdentifier) * speed;
+    if (Input.GetButtonDown(fireControlIdentifier) && Time.time > nextSpin)
     {
       Spin();
       nextSpin = Time.time + spinCooldown;
@@ -71,10 +83,10 @@ public class PadController : MonoBehaviour
 
   void OnCollisionEnter(Collision collision)
   {
-    if(collision.gameObject.tag == "Ball")
+    if(collision.gameObject.tag == "Ball" && GetComponent<PadController>().enabled)
     {
       Rigidbody ballRb = collision.gameObject.GetComponent<Rigidbody>();
-      Vector3 newForce = new Vector3(-Input.GetAxis("Vertical"), 0, Input.GetAxis("Horizontal"));
+      Vector3 newForce = new Vector3(-Input.GetAxis(verticalControlIdentifier), 0, Input.GetAxis(horizontalControlIdentifier));
       ballRb.AddForce(newForce, ForceMode.VelocityChange);
     }
   }
